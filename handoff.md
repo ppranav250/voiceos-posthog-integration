@@ -48,6 +48,19 @@ All 36 real checks passed on v1.1.1, run over MCP against a live PostHog project
 
 Detail lookups for `get_actions` and `get_session_recordings` were tested with unknown IDs only, because the test project had no actions or recordings.
 
+## How to test
+
+`tests/e2e.ts` starts the server through `run.sh`, as VoiceOS does, and calls all 14 tools over MCP against a real PostHog project. Keys are read from environment variables only.
+
+```bash
+bun install
+COMPOSIO_API_KEY=... POSTHOG_API_KEY=... bun tests/e2e.ts
+```
+
+The default run is read-only and covers the 12 read tools. To also test the 2 write tools, add `RUN_WRITE_TESTS=1`. This creates one feature flag (off, 0%) and one event, both named `voiceos-e2e-<timestamp>`, and the flag stays in PostHog until you delete it. These calls go directly over MCP, so they skip VoiceOS's confirmation cards.
+
+Optional variables are `POSTHOG_REGION` (default `us`) and `POSTHOG_PROJECT_ID`, which is required if the account has more than one project. The test exits with a non-zero status if any check fails.
+
 ## Known limitations
 
 - Some VoiceOS builds don't re-read a changed manifest after install. See `AGENTS.md` for how to load one.
