@@ -1,0 +1,521 @@
+{
+  "schemaVersion": 1,
+  "id": "com.voiceos.generated.posthog-analytics",
+  "version": "1.1.1",
+  "name": "PostHog",
+  "summary": "PostHog by voice: flags, insights, dashboards, funnels, retention, persons, cohorts, recordings, queries, and events.",
+  "icon": "icon.png",
+  "supportedPlatforms": [
+    "darwin"
+  ],
+  "publisher": {
+    "id": "pub_user",
+    "name": "Made in VoiceOS"
+  },
+  "runtime": {
+    "kind": "local-mcp",
+    "command": "/bin/zsh",
+    "args": [
+      "run.sh"
+    ]
+  },
+  "permissions": [
+    {
+      "kind": "network",
+      "domains": [
+        "backend.composio.dev"
+      ]
+    }
+  ],
+  "preferences": [
+    {
+      "name": "COMPOSIO_API_KEY",
+      "title": "Composio API key",
+      "description": "Your Composio API key from app.composio.dev/settings.",
+      "type": "password",
+      "required": true
+    },
+    {
+      "name": "POSTHOG_API_KEY",
+      "title": "PostHog Personal API Key",
+      "description": "Personal API key from PostHog (Account Settings -> Personal API Keys).",
+      "type": "password",
+      "required": true
+    },
+    {
+      "name": "POSTHOG_REGION",
+      "title": "PostHog Region",
+      "description": "Your PostHog cloud region: US or EU.",
+      "type": "select",
+      "required": false,
+      "default": "us",
+      "options": [
+        {
+          "label": "US (us.posthog.com)",
+          "value": "us"
+        },
+        {
+          "label": "EU (eu.posthog.com)",
+          "value": "eu"
+        }
+      ]
+    },
+    {
+      "name": "POSTHOG_PROJECT_ID",
+      "title": "PostHog Project ID",
+      "description": "Optional project ID. If left blank, the integration will auto-detect your project.",
+      "type": "text",
+      "required": false,
+      "default": ""
+    }
+  ],
+  "tools": [
+    {
+      "name": "list_feature_flags",
+      "title": "List feature flags",
+      "description": "List the feature flags in your PostHog project with their on/off status and rollout. Use when the user asks which flags exist or for an overview of flags. For one specific flag's full details use get_feature_flag.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Number of flags to list (1-10, default 5)."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_insights",
+      "title": "Get insights",
+      "description": "List the project's saved insights, or get the latest results of one saved insight by ID or short ID. Use when the user asks about saved insights or charts they already have in PostHog. For an ad-hoc funnel between events use get_funnel, for retention use get_retention, and for a custom question use run_query.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "insight_id": {
+            "type": "string",
+            "description": "Optional insight ID or short_id to get detailed metrics."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_dashboard",
+      "title": "Get dashboard",
+      "description": "List project dashboards with pinned status and card counts, or view details for a specific dashboard. Use when the user asks for PostHog dashboards.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "dashboard_id": {
+            "type": "string",
+            "description": "Optional dashboard ID to retrieve specific dashboard cards."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_event_definitions",
+      "title": "Get event definitions",
+      "description": "List tracked event definitions and schema with 30-day ingestion volume. Use when the user asks about tracked events, event schemas, or event volume in PostHog.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Number of event definitions to list (1-15, default 6)."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_feature_flag",
+      "title": "Get feature flag",
+      "description": "Get full details of one PostHog feature flag by its ID or key: status, rollout conditions, variants, and who created it. Use when the user asks about a specific flag.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "flag_id": {
+            "type": "string",
+            "description": "Numeric feature flag ID."
+          },
+          "key": {
+            "type": "string",
+            "description": "Feature flag key, e.g. 'new-checkout'. Used when no ID is given."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_funnel",
+      "title": "Get funnel insights",
+      "description": "Run a conversion funnel over 2 or more events in order and return how many users reached each step. Use when the user asks about conversion, drop-off, or a funnel between events.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "steps": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Event names in funnel order, at least 2 (e.g. ['$pageview', 'signed_up'])."
+          },
+          "date_from": {
+            "type": "string",
+            "description": "Start of the date range, e.g. '-30d', '-7d', or '2026-01-01'. Default '-30d'."
+          },
+          "window_days": {
+            "type": "number",
+            "description": "Days a user has to complete the funnel (1-90, default 14)."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        },
+        "required": [
+          "steps"
+        ]
+      }
+    },
+    {
+      "name": "get_retention",
+      "title": "Get retention insights",
+      "description": "Calculate user retention: of the users who did a start event in each period, how many came back and did a return event later. Use when the user asks about retention, churn, or whether users come back.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "target_event": {
+            "type": "string",
+            "description": "Event that puts a user into a cohort. Default '$pageview'."
+          },
+          "returning_event": {
+            "type": "string",
+            "description": "Event that counts as coming back. Defaults to the target event."
+          },
+          "period": {
+            "type": "string",
+            "enum": [
+              "Day",
+              "Week",
+              "Month"
+            ],
+            "description": "Cohort period. Default 'Day'."
+          },
+          "intervals": {
+            "type": "number",
+            "description": "Number of periods to analyze (2-12, default 7)."
+          },
+          "retention_type": {
+            "type": "string",
+            "enum": [
+              "first_time",
+              "recurring"
+            ],
+            "description": "'first_time' (default) cohorts users by their first event; 'recurring' by any occurrence."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "run_query",
+      "title": "Run report query",
+      "description": "Run a read-only HogQL (PostHog SQL) SELECT query and return up to 50 rows. Tables include events (event, timestamp, distinct_id, properties.$current_url, ...), persons, and sessions. Use when the user asks a custom data question no other PostHog tool answers.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "sql": {
+            "type": "string",
+            "description": "A single HogQL SELECT (or WITH ... SELECT) query, e.g. \"SELECT event, count() FROM events GROUP BY event ORDER BY count() DESC\"."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        },
+        "required": [
+          "sql"
+        ]
+      }
+    },
+    {
+      "name": "get_persons",
+      "title": "Get persons",
+      "description": "Look up people tracked in PostHog: list or search persons by email or distinct ID, or get one person's details and properties by their UUID. Read-only. Use when the user asks who a user is or wants to find users.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "person_id": {
+            "type": "string",
+            "description": "Person UUID for one person's details."
+          },
+          "search": {
+            "type": "string",
+            "description": "Search by email (full text) or distinct ID (exact)."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Number of persons to list (1-10, default 5)."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_cohorts",
+      "title": "Get cohorts",
+      "description": "List PostHog cohorts (saved groups of users) with their sizes, or get one cohort's details and filters by ID. Use when the user asks about cohorts, segments, or user groups.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "cohort_id": {
+            "type": "string",
+            "description": "Numeric cohort ID for one cohort's details."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_actions",
+      "title": "Get actions",
+      "description": "List PostHog actions (named definitions that group events, like 'Signed up'), or get one action's matching steps by ID. Use when the user asks about actions or how an action is defined.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "action_id": {
+            "type": "string",
+            "description": "Numeric action ID for one action's details."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "get_session_recordings",
+      "title": "Get session recordings",
+      "description": "List recent PostHog session recordings with duration, user, and activity, or get one recording's details by ID. Use when the user asks about session replays or recordings.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "recording_id": {
+            "type": "string",
+            "description": "Session recording ID for one recording's details."
+          },
+          "limit": {
+            "type": "number",
+            "description": "Number of recordings to list (1-10, default 5)."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        }
+      }
+    },
+    {
+      "name": "create_feature_flag",
+      "title": "Create feature flag",
+      "description": "Create a new boolean feature flag in PostHog. New flags are created OFF with 0% rollout unless the user explicitly asks for it to be on or names a percentage. Use when the user asks to add, create, or set up a feature flag.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "key": {
+            "type": "string",
+            "description": "Flag key used in code: letters, numbers, hyphens, underscores (e.g. 'new-checkout')."
+          },
+          "name": {
+            "type": "string",
+            "description": "Human-readable description of the flag."
+          },
+          "active": {
+            "type": "boolean",
+            "description": "Whether the flag is on immediately. Use false unless the user explicitly asks for it to be on."
+          },
+          "rollout_percentage": {
+            "type": "string",
+            "description": "Percent of users who get the flag, 0-100. Use \"0\" unless the user explicitly names a percentage."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        },
+        "required": [
+          "key",
+          "active",
+          "rollout_percentage"
+        ]
+      },
+      "confirmation": {
+        "schemaVersion": 1,
+        "root": {
+          "type": "card",
+          "title": "Create feature flag",
+          "children": [
+            {
+              "type": "text",
+              "text": "Creates this flag in your PostHog project. Check the state and rollout before approving.",
+              "variant": "body",
+              "maxLines": 3
+            },
+            {
+              "type": "textField",
+              "bind": "{{key}}",
+              "label": "Key",
+              "required": true,
+              "placeholder": "new-checkout"
+            },
+            {
+              "type": "textField",
+              "bind": "{{name}}",
+              "label": "Name",
+              "placeholder": "Optional description"
+            },
+            {
+              "type": "toggle",
+              "bind": "{{active}}",
+              "label": "Active (on when created)"
+            },
+            {
+              "type": "textField",
+              "bind": "{{rollout_percentage}}",
+              "label": "Rollout % (0-100)",
+              "required": true,
+              "placeholder": "0"
+            }
+          ],
+          "footer": [
+            {
+              "type": "actions",
+              "items": [
+                {
+                  "label": "Cancel",
+                  "role": "cancel"
+                },
+                {
+                  "label": "Create flag",
+                  "role": "confirm",
+                  "color": "accent"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "capture_event",
+      "title": "Capture event",
+      "description": "Send one custom analytics event to PostHog, optionally with properties. Use when the user asks to log, track, send, or record an event in PostHog.",
+      "inputSchema": {
+        "type": "object",
+        "properties": {
+          "event": {
+            "type": "string",
+            "description": "Event name, e.g. 'demo_booked'."
+          },
+          "distinct_id": {
+            "type": "string",
+            "description": "ID of the user the event belongs to. Use 'voiceos' if the user doesn't name one."
+          },
+          "properties": {
+            "type": "string",
+            "description": "Optional event properties as a JSON object string, e.g. '{\"plan\": \"pro\"}'."
+          },
+          "project_id": {
+            "type": "string",
+            "description": "Optional PostHog project ID. Uses default project if omitted."
+          }
+        },
+        "required": [
+          "event",
+          "distinct_id"
+        ]
+      },
+      "confirmation": {
+        "schemaVersion": 1,
+        "root": {
+          "type": "card",
+          "title": "Capture event",
+          "children": [
+            {
+              "type": "text",
+              "text": "Sends this event to your PostHog project. Events can't be unsent.",
+              "variant": "body",
+              "maxLines": 3
+            },
+            {
+              "type": "textField",
+              "bind": "{{event}}",
+              "label": "Event name",
+              "required": true,
+              "placeholder": "demo_booked"
+            },
+            {
+              "type": "textField",
+              "bind": "{{distinct_id}}",
+              "label": "Distinct ID",
+              "required": true,
+              "placeholder": "voiceos"
+            },
+            {
+              "type": "textField",
+              "bind": "{{properties}}",
+              "label": "Properties (JSON)",
+              "placeholder": "{\"plan\": \"pro\"} or leave blank",
+              "multiline": true
+            }
+          ],
+          "footer": [
+            {
+              "type": "actions",
+              "items": [
+                {
+                  "label": "Cancel",
+                  "role": "cancel"
+                },
+                {
+                  "label": "Send event",
+                  "role": "confirm",
+                  "color": "accent"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
