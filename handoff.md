@@ -50,10 +50,16 @@ Detail lookups for `get_actions` and `get_session_recordings` were tested with u
 
 ## How to test
 
-`tests/e2e.ts` starts the server through `run.sh`, as VoiceOS does, and calls all 14 tools over MCP against a real PostHog project. Keys are read from environment variables only.
+`bun test` runs the offline suite in `tests/server.test.ts`. It starts the real server against a fake Composio, so it needs no keys or network.
 
 ```bash
 bun install
+bun test
+```
+
+`tests/e2e.ts` starts the server through `run.sh`, as VoiceOS does, and calls all 14 tools over MCP against a real PostHog project. Keys are read from environment variables only.
+
+```bash
 COMPOSIO_API_KEY=... POSTHOG_API_KEY=... bun tests/e2e.ts
 ```
 
